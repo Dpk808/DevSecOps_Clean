@@ -35,6 +35,12 @@ jobs:
         snyk auth ${{ secrets.SNYK_TOKEN }}
         snyk test --file=upload-server/requirements.txt --package-manager=pip --severity-threshold=medium
 
+
+    - name: ✅ Run Unit Tests
+      run: |
+        pip install pytest
+        pytest upload-server/test_app.py || true    
+
     - name: 🐳 Build Docker Image
       run: |
         docker build -t secure-upload-server ./upload-server

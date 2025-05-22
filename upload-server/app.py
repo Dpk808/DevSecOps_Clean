@@ -1,7 +1,10 @@
 from flask import Flask, request, render_template_string, send_from_directory, redirect, url_for
+from prometheus_flask_exporter import PrometheusMetrics
 import os
 
 app = Flask(__name__)
+metrics = PrometheusMetrics(app)  # Enables /metrics endpoint
+
 UPLOAD_FOLDER = '/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -15,15 +18,10 @@ HTML = '''
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f0f4f8;
-            margin: 0;
             padding: 40px;
             text-align: center;
         }
-
-        h1, h2 {
-            color: #2c3e50;
-        }
-
+        h1, h2 { color: #2c3e50; }
         form {
             margin: 20px auto;
             padding: 20px;
@@ -32,11 +30,7 @@ HTML = '''
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
             display: inline-block;
         }
-
-        input[type="file"] {
-            margin-bottom: 10px;
-        }
-
+        input[type="file"] { margin-bottom: 10px; }
         input[type="submit"] {
             background-color: #3498db;
             color: white;
@@ -45,16 +39,8 @@ HTML = '''
             border-radius: 6px;
             cursor: pointer;
         }
-
-        input[type="submit"]:hover {
-            background-color: #2980b9;
-        }
-
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
+        input[type="submit"]:hover { background-color: #2980b9; }
+        ul { list-style-type: none; padding: 0; }
         li {
             padding: 5px 0;
             margin-bottom: 10px;
@@ -63,21 +49,9 @@ HTML = '''
             align-items: center;
             gap: 20px;
         }
-
-        a {
-            color: #34495e;
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
-        .message {
-            color: green;
-            margin-top: 10px;
-        }
-
+        a { color: #34495e; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .message { color: green; margin-top: 10px; }
         .delete-btn {
             background-color: #e74c3c;
             color: white;
@@ -86,10 +60,7 @@ HTML = '''
             border-radius: 4px;
             cursor: pointer;
         }
-
-        .delete-btn:hover {
-            background-color: #c0392b;
-        }
+        .delete-btn:hover { background-color: #c0392b; }
     </style>
 </head>
 <body>
@@ -99,7 +70,6 @@ HTML = '''
         <input type="submit" value="Upload"/>
     </form>
     <div class="message">{{ msg }}</div>
-
     <h2>Uploaded Files</h2>
     <ul>
         {% for file in files %}
