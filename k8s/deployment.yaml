@@ -1,0 +1,45 @@
+# deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: upload-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: upload-server
+  template:
+    metadata:
+      labels:
+        app: upload-server
+    spec:
+      containers:
+        - name: upload-server
+          image: deepakk2212/upload-server:v2
+          ports:
+            - containerPort: 80
+          env:
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: upload-server-secret
+                  key: SECRET_KEY
+          volumeMounts:
+            - name: upload-volume
+              mountPath: /uploads
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: upload-volume
+          persistentVolumeClaim:
+            claimName: upload-pvc

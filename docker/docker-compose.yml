@@ -1,0 +1,14 @@
+# docker-compose.yml
+
+version: '3.8'
+
+services:
+  upload-server:
+    build: ../upload-server
+    ports:
+      - "5000:80"
+    volumes:
+      - upload-data:/uploads
+
+volumes:
+  upload-data:
