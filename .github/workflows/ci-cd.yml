@@ -1,5 +1,3 @@
-# .github/workflows/ci-cd.yml
-
 name: DevSecOps CI/CD Pipeline
 
 on:
@@ -32,11 +30,10 @@ jobs:
         bandit -r upload-server/app.py -f txt -o scan-reports/bandit-report.txt || true
 
     - name: 🔒 Snyk - Python Dependency Vulnerability Scan
-      uses: snyk/actions/python@master
-      with:
-        args: test --file=upload-server/requirements.txt --severity-threshold=medium
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      run: |
+        npm install -g snyk
+        snyk auth ${{ secrets.SNYK_TOKEN }}
+        snyk test --file=upload-server/requirements.txt --package-manager=pip --severity-threshold=medium
 
     - name: 🐳 Build Docker Image
       run: |
