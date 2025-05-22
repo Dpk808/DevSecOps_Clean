@@ -11,7 +11,7 @@ spec:
   template:
     metadata:
       labels:
-        app: upload-server 
+        app: upload-server # 2
     spec:
       containers:
         - name: upload-server
