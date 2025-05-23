@@ -62,20 +62,27 @@ jobs:
         run: |
           docker push deepakk2212/secure-upload-server:latest
 
-      - name: 🔐 Create/Update Kubernetes Secret from GitHub Secret
+      - name: 🔐 Set up kubeconfig and create namespace & secret
         env:
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}  # You need to set this secret with your kubeconfig file content base64 encoded or configure kube access differently.
+          KUBECONFIG_B64: ${{ secrets.KUBECONFIG }}
         run: |
-          echo "$KUBECONFIG" | base64 --decode > kubeconfig
-          export KUBECONFIG=$(pwd)/kubeconfig
+          echo "$KUBECONFIG_B64" | base64 --decode > kubeconfig
+          export KUBECONFIG=$PWD/kubeconfig
           kubectl create namespace secure-upload --dry-run=client -o yaml | kubectl apply -f -
           kubectl create secret generic secure-upload-server-secret \
             --from-literal=SECRET_KEY=${{ secrets.UPLOAD_SECRET_KEY }} \
             --namespace=secure-upload \
             --dry-run=client -o yaml | kubectl apply -f -
 
+      - name: 🚀 Deploy Kubernetes manifests
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+        run: |
+          export KUBECONFIG=$PWD/kubeconfig
+          kubectl apply -f k8s/
+
       - name: 🗂️ Upload Security Scan Reports
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v3
         with:
           name: scan-reports
           path: scan-reports/

@@ -1,8 +1,8 @@
-# k8s/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: secure-upload-server
+  namespace: secure-upload      # <--- add this line
   labels:
     app: secure-upload-server
 spec:
