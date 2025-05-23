@@ -68,6 +68,6 @@ jobs:
           name: scan-reports
           path: scan-reports/
 
-      - name: 🔄 Trigger ArgoCD Sync
-        if: success()
-        run: curl -X POST ${{ secrets.ARGOCD_WEBHOOK }}
+      # - name: 🔄 Trigger ArgoCD Sync
+      #   if: success()
+      #   run: curl -X POST ${{ secrets.ARGOCD_WEBHOOK }}
