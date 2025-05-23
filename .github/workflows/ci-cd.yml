@@ -7,67 +7,67 @@ on:
 
 jobs:
   devsecops:
-    runs-on: ubuntu-latest # CI test1
+    runs-on: ubuntu-latest
 
     steps:
-    - name: 📥 Checkout Repository
-      uses: actions/checkout@v3
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v3
 
-    - name: 🐍 Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
-    - name: 📦 Install Python Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r upload-server/requirements.txt
+      - name: 📦 Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r upload-server/requirements.txt
 
-    - name: 🔍 Bandit - Static Code Security Scan
-      run: |
-        pip install bandit
-        mkdir -p scan-reports
-        bandit -r upload-server/app.py -f txt -o scan-reports/bandit-report.txt || true
+      - name: 🔍 Bandit - Static Code Security Scan
+        run: |
+          pip install bandit
+          mkdir -p scan-reports
+          bandit -r upload-server/app.py -f txt -o scan-reports/bandit-report.txt || true
 
-    - name: 🔒 Snyk - Python Dependency Vulnerability Scan
-      run: |
-        npm install -g snyk
-        snyk auth ${{ secrets.SNYK_TOKEN }}
-        snyk test --file=upload-server/requirements.txt --package-manager=pip --severity-threshold=medium
+      - name: 🔒 Snyk - Python Dependency Vulnerability Scan
+        run: |
+          npm install -g snyk
+          snyk auth ${{ secrets.SNYK_TOKEN }}
+          snyk test --file=upload-server/requirements.txt --package-manager=pip --severity-threshold=medium
 
-    - name: ✅ Run Unit Tests
-      run: |
-        pip install pytest
-        pytest upload-server/test_app.py
+      - name: ✅ Run Unit Tests
+        run: |
+          pip install pytest
+          pytest upload-server/test_app.py
 
-    - name: 🐳 Build Docker Image
-      run: |
-        docker build -t secure-upload-server ./upload-server
-        docker tag secure-upload-server deepakk2212/secure-upload-server:latest
+      - name: 🐳 Build Docker Image
+        run: |
+          docker build -t secure-upload-server ./upload-server
+          docker tag secure-upload-server deepakk2212/secure-upload-server:latest
 
-    - name: 🔐 Trivy - Docker Image Vulnerability Scan
-      uses: aquasecurity/trivy-action@master
-      with:
-        image-ref: 'deepakk2212/secure-upload-server:latest'
-        format: 'table'
-        output: 'scan-reports/trivy-report.txt'
+      - name: 🔐 Trivy - Docker Image Vulnerability Scan
+        uses: aquasecurity/trivy-action@v0.10.2
+        with:
+          image-ref: 'deepakk2212/secure-upload-server:latest'
+          format: 'table'
+          output: 'scan-reports/trivy-report.txt'
 
-    - name: 🔑 Log in to DockerHub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: 🔑 Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: 📤 Push Image to DockerHub
-      run: |
-        docker push deepakk2212/secure-upload-server:latest
+      - name: 📤 Push Image to DockerHub
+        run: |
+          docker push deepakk2212/secure-upload-server:latest
 
-    - name: 🗂️ Upload Security Scan Reports
-      uses: actions/upload-artifact@v2
-      with:
-        name: scan-reports
-        path: scan-reports/
+      - name: 🗂️ Upload Security Scan Reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: scan-reports
+          path: scan-reports/
 
-    - name: 🔄 Trigger ArgoCD Sync
-      if: success()
-      run: curl -X POST ${{ secrets.ARGOCD_WEBHOOK }}
+      - name: 🔄 Trigger ArgoCD Sync
+        if: success()
+        run: curl -X POST ${{ secrets.ARGOCD_WEBHOOK }}
