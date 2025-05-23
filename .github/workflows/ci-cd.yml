@@ -63,7 +63,7 @@ jobs:
           docker push deepakk2212/secure-upload-server:latest
 
       - name: 🗂️ Upload Security Scan Reports
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@master
         with:
           name: scan-reports
           path: scan-reports/
