@@ -7,7 +7,7 @@ on:
 
 jobs:
   devsecops:
-    runs-on: ubuntu-latest # test
+    runs-on: ubuntu-latest # CI test1
 
     steps:
     - name: 📥 Checkout Repository
