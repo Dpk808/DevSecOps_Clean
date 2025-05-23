@@ -7,7 +7,7 @@ on:
 
 jobs:
   devsecops:
-    runs-on: ubuntu-latest #CI test 2
+    runs-on: ubuntu-latest
 
     steps:
       - name: 📥 Checkout Repository
@@ -61,6 +61,18 @@ jobs:
       - name: 📤 Push Image to DockerHub
         run: |
           docker push deepakk2212/secure-upload-server:latest
+
+      - name: 🔐 Create/Update Kubernetes Secret from GitHub Secret
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}  # You need to set this secret with your kubeconfig file content base64 encoded or configure kube access differently.
+        run: |
+          echo "$KUBECONFIG" | base64 --decode > kubeconfig
+          export KUBECONFIG=$(pwd)/kubeconfig
+          kubectl create namespace secure-upload --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create secret generic secure-upload-server-secret \
+            --from-literal=SECRET_KEY=${{ secrets.UPLOAD_SECRET_KEY }} \
+            --namespace=secure-upload \
+            --dry-run=client -o yaml | kubectl apply -f -
 
       - name: 🗂️ Upload Security Scan Reports
         uses: actions/upload-artifact@master
