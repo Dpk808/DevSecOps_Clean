@@ -4,8 +4,7 @@ WORKDIR /app
 
 COPY app.py .
 
-RUN pip install --no-cache-dir flask && \
-    mkdir /uploads
+RUN pip install --no-cache-dir flask prometheus_flask_exporter
 
 VOLUME ["/uploads"]
 

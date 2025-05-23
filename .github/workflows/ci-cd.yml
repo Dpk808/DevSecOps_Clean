@@ -35,7 +35,6 @@ jobs:
         snyk auth ${{ secrets.SNYK_TOKEN }}
         snyk test --file=upload-server/requirements.txt --package-manager=pip --severity-threshold=medium
 
-
     - name: ✅ Run Unit Tests
       run: |
         pip install pytest
@@ -51,7 +50,7 @@ jobs:
       with:
         image-ref: 'deepakk2212/secure-upload-server:latest'
         format: 'table'
-        output: 'scan-reports/trivy-report.json'
+        output: 'scan-reports/trivy-report.txt'
 
     - name: 🔑 Log in to DockerHub
       uses: docker/login-action@v2
@@ -62,3 +61,13 @@ jobs:
     - name: 📤 Push Image to DockerHub
       run: |
         docker push deepakk2212/secure-upload-server:latest
+
+    - name: 🗂️ Upload Security Scan Reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: scan-reports
+        path: scan-reports/
+
+    - name: 🔄 Trigger ArgoCD Sync
+      if: success()
+      run: curl -X POST ${{ secrets.ARGOCD_WEBHOOK }}

@@ -114,4 +114,4 @@ def delete_file(filename):
     return render_template_string(HTML, msg=msg, files=files)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=80)
+    app.run(host="0.0.0.0", port=5000)

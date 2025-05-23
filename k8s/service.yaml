@@ -1,14 +1,12 @@
-# service.yaml
-
 apiVersion: v1
 kind: Service
 metadata:
-  name: upload-server-service
+  name: secure-upload-server-service
 spec:
   selector:
-    app: upload-server
+    app: secure-upload-server
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 80
+      targetPort: 5000
   type: ClusterIP
