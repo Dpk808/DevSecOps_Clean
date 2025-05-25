@@ -62,11 +62,14 @@ jobs:
       - name: 📤 Push Docker Image to DockerHub
         run: docker push deepakk2212/secure-upload-server:latest
 
+      
+      
       - name: 🔐 Setup kubeconfig, Namespace, and Secret
         env:
           KUBECONFIG_B64: ${{ secrets.KUBECONFIG }}
           SECRET_KEY: ${{ secrets.UPLOAD_SECRET_KEY }}
         run: |
+          mkdir -p $HOME/.kube
           echo "$KUBECONFIG_B64" | base64 --decode > $HOME/.kube/config
           echo "KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV
 
@@ -75,6 +78,7 @@ jobs:
             --from-literal=SECRET_KEY="$SECRET_KEY" \
             --namespace=secure-upload \
             --dry-run=client -o yaml | kubectl apply -f -
+
 
       - name: 🚀 Deploy Kubernetes manifests
         run: kubectl apply -f k8s/
