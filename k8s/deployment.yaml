@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: secure-upload-server
-  namespace: secure-upload      # <--- add this line
   labels:
     app: secure-upload-server
 spec:
@@ -29,6 +28,13 @@ spec:
           volumeMounts:
             - name: upload-volume
               mountPath: /uploads
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"
           livenessProbe:
             httpGet:
               path: /
