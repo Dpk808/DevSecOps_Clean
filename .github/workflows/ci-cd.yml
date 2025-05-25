@@ -13,7 +13,7 @@ jobs:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v3
 
-      - name: 🐍 Set up Python
+      - name: 🐍 Set up Python 3.11
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
@@ -24,10 +24,11 @@ jobs:
           pip install -r upload-server/requirements.txt
 
       - name: 🔍 Bandit - Static Code Security Scan
+        continue-on-error: true
         run: |
           pip install bandit
           mkdir -p scan-reports
-          bandit -r upload-server/app.py -f txt -o scan-reports/bandit-report.txt || true
+          bandit -r upload-server/app.py -f txt -o scan-reports/bandit-report.txt
 
       - name: 🔒 Snyk - Python Dependency Vulnerability Scan
         run: |
@@ -35,18 +36,18 @@ jobs:
           snyk auth ${{ secrets.SNYK_TOKEN }}
           snyk test --file=upload-server/requirements.txt --package-manager=pip --severity-threshold=medium
 
-      - name: ✅ Run Unit Tests
+      - name: ✅ Run Unit Tests with pytest
         run: |
           pip install pytest
           pytest upload-server/test_app.py
 
-      - name: 🐳 Build Docker Image
+      - name: 🐳 Build Docker Image & Tag
         run: |
           docker build -t secure-upload-server ./upload-server
           docker tag secure-upload-server deepakk2212/secure-upload-server:latest
 
       - name: 🔐 Trivy - Docker Image Vulnerability Scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.11.0
         with:
           image-ref: 'deepakk2212/secure-upload-server:latest'
           format: 'table'
@@ -58,29 +59,29 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: 📤 Push Image to DockerHub
-        run: |
-          docker push deepakk2212/secure-upload-server:latest
+      - name: 📤 Push Docker Image to DockerHub
+        run: docker push deepakk2212/secure-upload-server:latest
 
-      - name: 🔐 Set up kubeconfig and create namespace & secret
+      - name: 🔐 Setup kubeconfig, Create Namespace & Secret
         env:
           KUBECONFIG_B64: ${{ secrets.KUBECONFIG }}
+          SECRET_KEY: ${{ secrets.UPLOAD_SECRET_KEY }}
         run: |
           echo "$KUBECONFIG_B64" | base64 --decode > kubeconfig
           export KUBECONFIG=$PWD/kubeconfig
           kubectl create namespace secure-upload --dry-run=client -o yaml | kubectl apply -f -
           kubectl create secret generic secure-upload-server-secret \
-            --from-literal=SECRET_KEY=${{ secrets.UPLOAD_SECRET_KEY }} \
+            --from-literal=SECRET_KEY="$SECRET_KEY" \
             --namespace=secure-upload \
             --dry-run=client -o yaml | kubectl apply -f -
 
       - name: 🚀 Deploy Kubernetes manifests
-        run: |
-          export KUBECONFIG=$PWD/kubeconfig
-          kubectl apply -f k8s/
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig
+        run: kubectl apply -f k8s/
 
       - name: 🗂️ Upload Security Scan Reports
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v3
         with:
           name: scan-reports
           path: scan-reports/
