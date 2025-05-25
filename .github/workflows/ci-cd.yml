@@ -82,7 +82,7 @@ jobs:
         run: kubectl apply -f k8s/
 
       - name: 🗂️ Upload Security Scan Reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@master
         with:
           name: scan-reports
           path: scan-reports/
