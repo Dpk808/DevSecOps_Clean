@@ -47,7 +47,7 @@ jobs:
           docker tag secure-upload-server deepakk2212/secure-upload-server:latest
 
       - name: 🔐 Trivy - Docker Image Vulnerability Scan
-        uses: aquasecurity/trivy-action@v0.11.0
+        uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'deepakk2212/secure-upload-server:latest'
           format: 'table'
