@@ -1,53 +1,45 @@
+# deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: secure-upload-server
-  labels:
-    app: secure-upload-server
+  name: upload-server
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: secure-upload-server
+      app: upload-server
   template:
     metadata:
       labels:
-        app: secure-upload-server
+        app: upload-server # test3
     spec:
       containers:
-        - name: secure-upload-server
-          image: deepakk2212/secure-upload-server:v1
+        - name: upload-server
+          image: deepakk2212/upload-server:v2
           ports:
-            - containerPort: 5000
+            - containerPort: 80
           env:
             - name: SECRET_KEY
               valueFrom:
                 secretKeyRef:
-                  name: secure-upload-server-secret
+                  name: upload-server-secret
                   key: SECRET_KEY
           volumeMounts:
             - name: upload-volume
               mountPath: /uploads
-          resources:
-            requests:
-              cpu: "100m"
-              memory: "128Mi"
-            limits:
-              cpu: "250m"
-              memory: "256Mi"
           livenessProbe:
             httpGet:
               path: /
-              port: 5000
+              port: 80
             initialDelaySeconds: 10
             periodSeconds: 30
           readinessProbe:
             httpGet:
               path: /
-              port: 5000
+              port: 80
             initialDelaySeconds: 5
             periodSeconds: 10
       volumes:
         - name: upload-volume
           persistentVolumeClaim:
-            claimName: secure-upload-pvc
+            claimName: upload-pvc
