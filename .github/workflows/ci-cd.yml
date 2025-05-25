@@ -62,8 +62,6 @@ jobs:
       - name: 📤 Push Docker Image to DockerHub
         run: docker push deepakk2212/secure-upload-server:latest
 
-      
-      
       - name: 🔐 Setup kubeconfig, Namespace, and Secret
         env:
           KUBECONFIG_B64: ${{ secrets.KUBECONFIG }}
@@ -79,9 +77,8 @@ jobs:
             --namespace=secure-upload \
             --dry-run=client -o yaml | kubectl apply -f -
 
-      # - name: 🚀 Deploy Kubernetes manifests
-      #   run: kubectl apply -f k8s/
-
+      - name: 🚀 Deploy Kubernetes manifests
+        run: kubectl apply -f k8s/
 
       - name: 🗂️ Upload Security Scan Reports
         uses: actions/upload-artifact@master
@@ -92,3 +89,8 @@ jobs:
       # - name: 🔄 Trigger ArgoCD Sync
       #   if: success()
       #   run: curl -X POST ${{ secrets.ARGOCD_WEBHOOK }}
+
+# IMPORTANT:
+# Make sure your KUBECONFIG secret contains embedded certs/keys, created with:
+#   kubectl config view --raw | base64 -w0
+# This avoids errors like missing client cert/key files in the GitHub Actions environment.
