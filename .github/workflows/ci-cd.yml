@@ -81,6 +81,25 @@ jobs:
       - name: 🚀 Deploy Kubernetes manifests
         run: kubectl apply -f k8s/
 
+      - name: 🛡️ Install Helm
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+      - name: 🔄 Add Falco Helm repo and update
+        run: |
+          helm repo add falcosecurity https://falcosecurity.github.io/charts
+          helm repo update
+
+      - name: 📦 Create Falco namespace
+        run: kubectl create namespace falco --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: 🚨 Install Falco using Helm
+        run: |
+          helm install falco falcosecurity/falco --namespace falco --wait
+
+      - name: 🔍 Verify Falco pods are running
+        run: kubectl get pods -n falco
+
       - name: 🗂️ Upload Security Scan Reports
         uses: actions/upload-artifact@master
         with:
