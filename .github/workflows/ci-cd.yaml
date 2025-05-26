@@ -55,7 +55,7 @@ jobs:
         uses: zaproxy/action-full-scan@v0.4.0
         with:
           target: 'http://your-app-url'
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@master
         with:
           name: zap-report
           path: report_html.html
